@@ -15,18 +15,20 @@ var gulp = require('gulp')
   , watchify = require('watchify')
   , gulpif = require('gulp-if')
   , vinylPaths = require('vinyl-paths')
+  , coffeeify = require('coffeeify')
   , paths;
 
 var watching = false;
 
 paths = {
   assets: 'src/assets/**/*',
+  csv: 'src/assets/*.csv',
   css:    'src/css/*.css',
   libs:   [
     './src/bower_components/phaser-official/build/phaser.js'
   ],
   js:     ['src/js/*.js', 'src/js/**/*.js'],
-  entry: './src/js/main.js',
+  entry: './src/js/main.coffee',
   dist:   './dist/'
 };
 
@@ -53,11 +55,14 @@ gulp.task('compile', ['clean'], function () {
   var bundler = browserify({
     cache: {}, packageCache: {}, fullPaths: true,
     entries: [paths.entry],
-    debug: watching
+    extensions: ['.coffee'],
+    debug: watching,
+    transform: ['coffeeify']
   });
 
   var bundlee = function() {
     return bundler
+
       .bundle()
       .pipe(source('main.min.js'))
       .pipe(jshint('.jshintrc'))
@@ -116,7 +121,7 @@ gulp.task('connect', function () {
 
 gulp.task('watch', function () {
   watching = true;
-  return gulp.watch(['./src/index.html', paths.css, paths.js], ['build', 'html']);
+  return gulp.watch(['./src/index.html', paths.csv, paths.entry, paths.css, paths.js], ['build', 'html']);
 });
 
 gulp.task('default', ['connect', 'watch', 'build']);
